@@ -45,28 +45,11 @@ class Database_Connection():
         self.__cur.execute("DELETE FROM dronePos")
 
 class Commander():
-    """
-    # Drone Command Controller
-    For the University of Gloucestershire Drone-ing on project.
-
-    ## Description
-    
-    """
     def __init__(self, database_path : str = None) -> None:
         self.__drone = robot.Drone()
         self.__okay = self.__drone.initialize()
         self.__drone_flight = self.__drone.flight
-        #self.__drone_camera = self.__drone.camera
-        #self.__drone_battery = self.__drone.battery
         self.state_okay = True
-        #self.__db_conn = Database_Connection()
-        self.__w_pool = mp.Pool(2)
-        self.old_xpos = 0.0
-        self.old_ypos = 0.0
-        self.old_zpos = 0.0
-        self.x_pos = 0.0
-        self.y_pos = 0.0
-        self.z_pos = 0.0
         if database_path != None:
             self.__db_conn = Database_Connection(database_path)
             self.__positions = self.__db_conn.fetch_all_movements()
@@ -78,18 +61,16 @@ class Commander():
     def move_to_next(self) -> bool:
         """Move to next position in the coordinate space.
         Returns true if succesful"""
-        #get positions
         xyz = self.__positions[self.current_index]
         x = xyz[0] * 25
         y = xyz[1] * 25
-        # Hold 30 cm above ground
-        z = 1
-        successful = self.__drone_flight.go(x , y , z , speed=50 , mid=None , retry=False).wait_for_completed()
+        # Height can't be 0, set to 1 to hold height
+        z = 1 # 
+        successful = self.__drone_flight.go(x, y, z, speed=50 , mid=None , retry=False).wait_for_completed()
         if successful == True:
             self.current_index += 1
         
         return successful
-        
 
     def move_to_previous(self) -> bool:
         """Move to previous position in the coordinate space.
@@ -97,14 +78,12 @@ class Commander():
         if self.current_index != 0:
             self.current_index -= 1
             xyz = self.__positions[self.current_index]
-            x = xyz[0]
-            y = xyz[1]
-            # Hold 30 cm above ground
+            x = xyz[0] * 25
+            y = xyz[1] * 25
+            # Height can't be 0, set to 1 to hold height
             z = 1
-            successful = self.__drone_flight.go(x , y , z , speed=10 , mid=None , retry=True).wait_for_completed()
+            successful = self.__drone_flight.go(x, y, z, speed=10 , mid=None , retry=True).wait_for_completed()
             return successful
-
-
 
     def takeoff(self) -> bool:
         """Returns True if completed and False for action timeout"""
@@ -119,6 +98,3 @@ class Commander():
         self.is_grounded = True
         self.is_airborn = False
         return successful
-        
-#db_conn = Database_Connection()
-#print(db_conn.fetch_all_movements())

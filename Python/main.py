@@ -1,6 +1,5 @@
 import keyboard
-from drone_commands import Commander, Database_Connection
-from interface import Display
+from drone_commands import Commander
 import time
 import os
 
@@ -9,23 +8,8 @@ os.chdir(dir)
 
 app = True
 
-# tuple of (x, y, z)
-demo_path = [
-    (10, 0, 10)
-]
-
-def setup():
-    database_path = "drone.db"
-    __db_conn = Database_Connection(database_path)
-    __positions = __db_conn.fetch_all_movements()
-
-    pass
-
-
 def main():
-    drone_c = Commander(database_path="drone.db")
-    setup()
-    
+    drone_c = Commander(database_path="drone.db")    
     while app:
 
         if keyboard.is_pressed('t'):
@@ -43,7 +27,6 @@ def main():
         elif keyboard.is_pressed('right arrow'):
             print("Right arrow pressed")
             drone_c.state_okay = drone_c.move_to_next()
-
             # Goes to next position
             time.sleep(0.05)
 
